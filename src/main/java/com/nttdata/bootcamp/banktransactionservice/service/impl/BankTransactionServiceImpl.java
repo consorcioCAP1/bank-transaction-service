@@ -24,10 +24,10 @@ public class BankTransactionServiceImpl implements BankTransactionService{
 	@Autowired
 	BankTransactionRepository repository;
 
-	public final String TRANSACTION_TYPE_BANK_DEPOSIT = "DEPOSIT";
-	public final String TRANSACTION_TYPE_BANK_WITHDRAWAL = "WITHDRAWAL";
-	public final String TRANSACTION_TYPE_BANK_CREDIT_PAYMENT = "CREDIT_PAYMENT";
-	public final String TRANSACTION_TYPE_BANK_CARD_USAGE = "CARD_USAGE";
+	public static final String TRANSACTION_TYPE_BANK_DEPOSIT = "DEPOSIT";
+	public static final String TRANSACTION_TYPE_BANK_WITHDRAWAL = "WITHDRAWAL";
+	public static final String TRANSACTION_TYPE_BANK_CREDIT_PAYMENT = "CREDIT_PAYMENT";
+	public static final String TRANSACTION_TYPE_BANK_CARD_USAGE = "CARD_USAGE";
 
 	@Value("${customer-bank-account.api.url}")
     private String customerBankUrl;
@@ -36,16 +36,14 @@ public class BankTransactionServiceImpl implements BankTransactionService{
     private String customerBankUrlGetAccountBalance;
 
 	@Override
-	public Mono<BankTransaction> saveBankTransactionWithDrawal(BankTransactionDto transactionDto) throws JsonProcessingException{
+	public Mono<BankTransaction> saveBankTransactionWithDrawal(BankTransactionDto transactionDto){
 		//validando tipo de transaccion retiro
 		return getAccountBalanceByAccountNumber(transactionDto.getBankAccountNumber())
                 .flatMap(accountBalance -> {
-                	log.info("cliente con N de cuenta: "+transactionDto.getBankAccountNumber() +" tiene el siguiente saldo:"+ accountBalance);
                     if (accountBalance < transactionDto.getAmount()) {
                         return Mono.error(new RuntimeException("Saldo en cuenta es insuficiente."));
                     } else {
                     	Double newAmount= accountBalance - transactionDto.getAmount();
-	                	log.info("nuevo monto en cuenta: "+newAmount);
 	                	updateAccountBalance(transactionDto.getBankAccountNumber(), newAmount).subscribe();
                         BankTransaction bankTransaction = BankTransactionBuilder.buildTransaction(transactionDto);
                         return repository.save(bankTransaction);
@@ -54,16 +52,14 @@ public class BankTransactionServiceImpl implements BankTransactionService{
 	}
 
 	//Metodo para realizar pago de productos de credito
-	public Mono<BankTransaction> saveBankTransactionCreditPayment(BankTransactionDto transactionDto) throws JsonProcessingException{
+	public Mono<BankTransaction> saveBankTransactionCreditPayment(BankTransactionDto transactionDto){
 		//validando tipo de transaccion retiro
 		return getAccountBalanceByAccountNumber(transactionDto.getBankAccountNumber())
                 .flatMap(accountBalance -> {
-                	log.info("cliente con N de cuenta: "+transactionDto.getBankAccountNumber() +" tiene el siguiente saldo:"+ accountBalance);
                     if (accountBalance < transactionDto.getAmount()) {
                         return Mono.error(new RuntimeException("Saldo en cuenta es insuficiente."));
                     } else {
                     	Double newAmount= accountBalance - transactionDto.getAmount();
-	                	log.info("nuevo monto en cuenta: "+newAmount);
 	                	updateAccountBalance(transactionDto.getBankAccountNumber(), newAmount).subscribe();
                         BankTransaction bankTransaction = BankTransactionBuilder.buildTransaction(transactionDto);
                         return repository.save(bankTransaction);
@@ -72,20 +68,20 @@ public class BankTransactionServiceImpl implements BankTransactionService{
 	}
 
 	@Override
-	public Mono<BankTransaction> saveBankTransactionDeposit(BankTransactionDto transactionDto)
-			throws JsonProcessingException {
+	public Mono<BankTransaction> saveBankTransactionDeposit(BankTransactionDto transactionDto){
 		//obtenemos el saldo actual para modificarlo
 		return getAccountBalanceByAccountNumber(transactionDto.getBankAccountNumber())
-                .flatMap(accountBalance -> {
-                	log.info("cliente con N de cuenta: "+transactionDto.getBankAccountNumber() +" tiene el siguiente saldo:"+ accountBalance);                    
-                	Double newAmount= accountBalance + transactionDto.getAmount();
-                	log.info("nuevo monto en cuenta: "+newAmount);
-                	updateAccountBalance(transactionDto.getBankAccountNumber(), newAmount).subscribe();
-                    BankTransaction bankTransaction = BankTransactionBuilder.buildTransaction(transactionDto);
-                    return repository.save(bankTransaction);                
-                });	
+	            .onErrorResume(JsonProcessingException.class, ex -> {
+	                log.error("Error al procesar la respuesta del clienteBank para obtener el saldo de la cuenta.", ex);
+	                return Mono.error(new RuntimeException("Error al obtener el saldo de la cuenta."));
+	            })
+	            .flatMap(accountBalance -> {
+	                Double newAmount = accountBalance + transactionDto.getAmount();
+	                updateAccountBalance(transactionDto.getBankAccountNumber(), newAmount).subscribe();
+	                BankTransaction bankTransaction = BankTransactionBuilder.buildTransaction(transactionDto);
+	                return repository.save(bankTransaction);
+	            });
 	}
-
 	
 	//metodo para registrarTransaccion
 	@Override
@@ -100,16 +96,17 @@ public class BankTransactionServiceImpl implements BankTransactionService{
 		return repository.findByBankAccountNumber(accountNumber);     
 	}
 	//metodo para obtener el saldo disponible del cliente
-	public Mono<Double> getAccountBalanceByAccountNumber(String accountNumber) throws JsonProcessingException{
+	public Mono<Double> getAccountBalanceByAccountNumber(String accountNumber) {
 		WebClient webClient = WebClient.create(customerBankUrl); 
 		return webClient.get()
 		            .uri(customerBankUrlGetAccountBalance, accountNumber)
 		            .retrieve()
-		            .bodyToMono(Double.class);      
+		            .bodyToMono(Double.class);
 	}
 
 	//metodo para actualizar el saldo
 	public Mono<Void> updateAccountBalance(String bankAccountNumber,Double accountBalance) {
+    	log.info("nuevo monto en cuenta: "+bankAccountNumber + " es: "+ accountBalance);
 		WebClient webClient = WebClient.create(customerBankUrl); 
 		return webClient.put()
                 .uri("/updateAccountBalance/{bankAccountNumber}?accountBalance={accountBalance}", bankAccountNumber, accountBalance)

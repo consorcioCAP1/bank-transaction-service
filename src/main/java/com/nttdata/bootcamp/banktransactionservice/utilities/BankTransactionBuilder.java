@@ -7,7 +7,8 @@ import com.nttdata.bootcamp.banktransactionservice.documents.BankTransaction;
 import com.nttdata.bootcamp.banktransactionservice.dto.BankTransactionDto;
 
 public class BankTransactionBuilder {
-
+	
+	private BankTransactionBuilder(){}
 	public static BankTransaction buildTransaction(BankTransactionDto transactionDto) {
 		LocalDateTime currentDate = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -19,6 +20,4 @@ public class BankTransactionBuilder {
 				.description(transactionDto.getDescription())
 				.build();
 	}
-
-
 }
