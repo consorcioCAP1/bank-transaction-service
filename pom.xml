@@ -59,6 +59,25 @@
 	            <artifactId>sonar-maven-plugin</artifactId>
 	            <version>${sonar-maven-plugin.version}</version>
 	        </plugin>
+	        <!-- Plugin de Checkstyle -->
+            <plugin>
+	            <groupId>org.apache.maven.plugins</groupId>
+	            <artifactId>maven-checkstyle-plugin</artifactId>
+	            <version>3.1.1</version> <!-- Versión específica del plugin -->
+	            <executions>
+	                <execution>
+	                    <id>checkstyle</id>
+	                    <phase>validate</phase>
+	                    <goals>
+	                        <goal>check</goal>
+	                    </goals>
+	                </execution>
+	            </executions>
+	            <configuration>
+	                <configLocation>checkstyle.xml</configLocation>
+	                <!-- Puedes agregar otras configuraciones aquí -->
+	            </configuration>
+        	</plugin>
 		</plugins>
 	</build>
 

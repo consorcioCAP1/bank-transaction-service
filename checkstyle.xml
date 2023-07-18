@@ -1,0 +1,15 @@
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+    <!-- Otras configuraciones de Checkstyle -->
+    
+    <!-- Configuración de líneas -->
+    <module name="LineLength">
+        <property name="max" value="120"/>
+        <property name="ignorePattern" value="^package.*|^import.*|^.*Test.*$"/>
+    </module>
+
+    <!-- Configuración de sangría, nombres, comentarios, etc. -->
+</module>

@@ -9,8 +9,10 @@ import reactor.core.publisher.Mono;
 
 public interface BankTransactionService {
 
-	public Mono<BankTransaction> saveBankTransactionWithDrawal(BankTransactionDto transactionDto) throws JsonProcessingException;
-	public Mono<BankTransaction> saveBankTransactionDeposit(BankTransactionDto transactionDto) throws JsonProcessingException;
+	public Mono<BankTransaction> saveBankTransactionWithDrawal(BankTransactionDto transactionDto)
+			throws JsonProcessingException;
+	public Mono<BankTransaction> saveBankTransactionDeposit(BankTransactionDto transactionDto)
+			throws JsonProcessingException;
 	public Flux<BankTransaction> getBankTransactionByAccountNumber(String accountNumber);
 	public Mono<BankTransaction> saveBankTransaction(BankTransactionDto transactionDto);
 }

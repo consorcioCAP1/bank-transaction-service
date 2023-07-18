@@ -72,7 +72,7 @@ public class BankTransactionServiceImpl implements BankTransactionService{
 		//obtenemos el saldo actual para modificarlo
 		return getAccountBalanceByAccountNumber(transactionDto.getBankAccountNumber())
 	            .onErrorResume(JsonProcessingException.class, ex -> {
-	                log.error("Error al procesar la respuesta del clienteBank para obtener el saldo de la cuenta.", ex);
+	                log.error("Error al procesar la respuesta para obtener el saldo de la cuenta.", ex);
 	                return Mono.error(new RuntimeException("Error al obtener el saldo de la cuenta."));
 	            })
 	            .flatMap(accountBalance -> {
@@ -109,7 +109,8 @@ public class BankTransactionServiceImpl implements BankTransactionService{
     	log.info("nuevo monto en cuenta: "+bankAccountNumber + " es: "+ accountBalance);
 		WebClient webClient = WebClient.create(customerBankUrl); 
 		return webClient.put()
-                .uri("/updateAccountBalance/{bankAccountNumber}?accountBalance={accountBalance}", bankAccountNumber, accountBalance)
+                .uri("/updateAccountBalance/{bankAccountNumber}?accountBalance={accountBalance}",
+                		bankAccountNumber, accountBalance)
                 .retrieve()
                 .toBodilessEntity()
                 .flatMap(response -> {

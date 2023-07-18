@@ -27,14 +27,17 @@ public class BankTransactionController {
 	
 	//metodo para realizar un retiro en cuenta
 	@PostMapping("/createBankTransactionWithDrawal")
-    public Mono<ResponseEntity<Object>>  createBankTransactionWithDrawal(@RequestBody BankTransactionDto bankTransactionDto) {
+    public Mono<ResponseEntity<Object>>createBankTransactionWithDrawal
+    							(@RequestBody BankTransactionDto bankTransactionDto) {
 		try {
-			return bankTransactionService.saveBankTransactionWithDrawal(bankTransactionDto).flatMap(objResponse -> {
-			        ResponseEntity<Object> responseEntity = ResponseEntity.ok(objResponse);
-			        return Mono.just(responseEntity);
+			return bankTransactionService.saveBankTransactionWithDrawal(bankTransactionDto)
+					.flatMap(objResponse -> {
+				        ResponseEntity<Object> responseEntity = ResponseEntity.ok(objResponse);
+				        return Mono.just(responseEntity);
 			    })
 			    .onErrorResume(error -> {
-			        ResponseEntity<Object> responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.getMessage());
+			        ResponseEntity<Object> responseEntity = ResponseEntity
+			        		.status(HttpStatus.BAD_REQUEST).body(error.getMessage());
 			        return Mono.just(responseEntity);
 			    });
 		} catch (JsonProcessingException e) {
@@ -44,14 +47,16 @@ public class BankTransactionController {
 	}
 	//metodo para realizar un deposito en cuenta
 	@PostMapping("/createBankTransactionDeposit")
-    public Mono<ResponseEntity<Object>>  createBankTransactionDeposit(@RequestBody BankTransactionDto bankTransactionDto) {
+    public Mono<ResponseEntity<Object>>createBankTransactionDeposit(@RequestBody BankTransactionDto bankTransactionDto){
 		try {
-			return bankTransactionService.saveBankTransactionDeposit(bankTransactionDto).flatMap(objResponse -> {
-			        ResponseEntity<Object> responseEntity = ResponseEntity.ok(objResponse);
-			        return Mono.just(responseEntity);
+			return bankTransactionService.saveBankTransactionDeposit(bankTransactionDto)
+					.flatMap(objResponse -> {
+				        ResponseEntity<Object> responseEntity = ResponseEntity.ok(objResponse);
+				        return Mono.just(responseEntity);
 			    })
 			    .onErrorResume(error -> {
-			        ResponseEntity<Object> responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error.getMessage());
+			        ResponseEntity<Object> responseEntity = ResponseEntity
+			        		.status(HttpStatus.BAD_REQUEST).body(error.getMessage());
 			        return Mono.just(responseEntity);
 			    });
 		} catch (JsonProcessingException e) {
