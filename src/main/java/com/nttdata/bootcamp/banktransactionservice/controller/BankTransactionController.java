@@ -29,40 +29,34 @@ public class BankTransactionController {
 	@PostMapping("/createBankTransactionWithDrawal")
     public Mono<ResponseEntity<Object>>createBankTransactionWithDrawal
     							(@RequestBody BankTransactionDto bankTransactionDto) {
-		try {
-			return bankTransactionService.saveBankTransactionWithDrawal(bankTransactionDto)
-					.flatMap(objResponse -> {
-				        ResponseEntity<Object> responseEntity = ResponseEntity.ok(objResponse);
-				        return Mono.just(responseEntity);
-			    })
-			    .onErrorResume(error -> {
-			        ResponseEntity<Object> responseEntity = ResponseEntity
-			        		.status(HttpStatus.BAD_REQUEST).body(error.getMessage());
+		
+		return bankTransactionService.saveBankTransactionWithDrawal(bankTransactionDto)
+				.flatMap(objResponse -> {
+			        ResponseEntity<Object> responseEntity = ResponseEntity.ok(objResponse);
 			        return Mono.just(responseEntity);
-			    });
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-		}
-		return Mono.empty();
+		    })
+		    .onErrorResume(error -> {
+		        ResponseEntity<Object> responseEntity = ResponseEntity
+		        		.status(HttpStatus.BAD_REQUEST).body(error.getMessage());
+		        return Mono.just(responseEntity);
+		    });
+		
 	}
 	//metodo para realizar un deposito en cuenta
 	@PostMapping("/createBankTransactionDeposit")
     public Mono<ResponseEntity<Object>>createBankTransactionDeposit(@RequestBody BankTransactionDto bankTransactionDto){
-		try {
-			return bankTransactionService.saveBankTransactionDeposit(bankTransactionDto)
-					.flatMap(objResponse -> {
-				        ResponseEntity<Object> responseEntity = ResponseEntity.ok(objResponse);
-				        return Mono.just(responseEntity);
-			    })
-			    .onErrorResume(error -> {
-			        ResponseEntity<Object> responseEntity = ResponseEntity
-			        		.status(HttpStatus.BAD_REQUEST).body(error.getMessage());
+		
+		return bankTransactionService.saveBankTransactionDeposit(bankTransactionDto)
+				.flatMap(objResponse -> {
+			        ResponseEntity<Object> responseEntity = ResponseEntity.ok(objResponse);
 			        return Mono.just(responseEntity);
-			    });
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-		}
-		return Mono.empty();
+		    })
+		    .onErrorResume(error -> {
+		        ResponseEntity<Object> responseEntity = ResponseEntity
+		        		.status(HttpStatus.BAD_REQUEST).body(error.getMessage());
+		        return Mono.just(responseEntity);
+		    });
+	
 	}
 	//metodo para consultar movimientos bancarios
 	@GetMapping("/getBankTransactionByAccountNumber/{bankAccountNumber}")
@@ -76,4 +70,19 @@ public class BankTransactionController {
 		return bankTransactionService.saveBankTransaction(bankTransactionDto);
 	}
 
+	//metodo para realizar el uso de tarjeta de credito
+	@PostMapping("/createBankTransactionCreditCardUsage")
+    public Mono<ResponseEntity<Object>>createBankTransactionCardUsage
+    							(@RequestBody BankTransactionDto bankTransactionDto) {
+		return bankTransactionService.saveBankTransactionCardUsage(bankTransactionDto)
+				.flatMap(objResponse -> {
+			        ResponseEntity<Object> responseEntity = ResponseEntity.ok(objResponse);
+			        return Mono.just(responseEntity);
+		    })
+		    .onErrorResume(error -> {
+		        ResponseEntity<Object> responseEntity = ResponseEntity
+		        		.status(HttpStatus.BAD_REQUEST).body(error.getMessage());
+		        return Mono.just(responseEntity);
+		    });		
+	}
 }
