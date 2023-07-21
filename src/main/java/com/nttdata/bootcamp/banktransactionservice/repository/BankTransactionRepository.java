@@ -14,4 +14,8 @@ public interface BankTransactionRepository extends ReactiveMongoRepository<BankT
 	
 	@Query("{'bankAccountNumber': ?0, 'type': { $in: [ 'DEPOSIT', 'WITHDRAWAL' ] }}")
 	Flux<BankTransaction> findDepositsAndWithdrawalsByBankAccountNumber(String bankAccountNumber);
+	
+	@Query("{'typeAccount': ?0, 'date': {$regex: ?1}}")
+    Flux<BankTransaction> findByTypeAccountAndMonth(String typeAccount, String month);
+
 }

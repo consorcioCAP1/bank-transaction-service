@@ -2,6 +2,7 @@ package com.nttdata.bootcamp.banktransactionservice.service;
 
 import com.nttdata.bootcamp.banktransactionservice.documents.BankTransaction;
 import com.nttdata.bootcamp.banktransactionservice.dto.BankTransactionDto;
+import com.nttdata.bootcamp.banktransactionservice.dto.BankTransferDto;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -13,5 +14,7 @@ public interface BankTransactionService {
 	public Flux<BankTransaction> getBankTransactionByAccountNumber(String accountNumber);
 	public Mono<BankTransaction> saveBankTransaction(BankTransactionDto transactionDto);
 	public Mono<BankTransaction> saveBankTransactionCardUsage(BankTransactionDto transactionDto);
+	public Mono<BankTransaction> sendBankTransfer(BankTransferDto transferDto);
+	public Flux<BankTransaction> getBankTransactionsByTypeAccountAndMonth(String typeAccount, String month);
 }
 

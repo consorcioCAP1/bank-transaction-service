@@ -12,4 +12,5 @@ public class BankTransactionDto {
 	private String bankAccountNumber;
 	private int paymentBankFee;
 	private String paymentStartDate;
+	private String typeAccount;
 }

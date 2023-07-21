@@ -20,4 +20,6 @@ public class BankTransaction {
 	private String date;
 	private String description;
 	private String bankAccountNumber;
+	private String typeAccount;
+
 }

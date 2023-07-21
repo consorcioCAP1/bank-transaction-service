@@ -9,10 +9,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nttdata.bootcamp.banktransactionservice.documents.BankTransaction;
 import com.nttdata.bootcamp.banktransactionservice.dto.BankTransactionDto;
+import com.nttdata.bootcamp.banktransactionservice.dto.BankTransferDto;
 import com.nttdata.bootcamp.banktransactionservice.service.BankTransactionService;
 
 import reactor.core.publisher.Flux;
@@ -85,4 +84,25 @@ public class BankTransactionController {
 		        return Mono.just(responseEntity);
 		    });		
 	}
+	//metodo para realizar un deposito en cuenta
+	@PostMapping("/sendBankTransfer")
+    public Mono<ResponseEntity<Object>>createBankTransactionDeposit(@RequestBody BankTransferDto transferDto){
+		
+		return bankTransactionService.sendBankTransfer(transferDto)
+				.flatMap(objResponse -> {
+			        ResponseEntity<Object> responseEntity = ResponseEntity.ok(objResponse);
+			        return Mono.just(responseEntity);
+		    })
+		    .onErrorResume(error -> {
+		        ResponseEntity<Object> responseEntity = ResponseEntity
+		        		.status(HttpStatus.BAD_REQUEST).body(error.getMessage());
+		        return Mono.just(responseEntity);
+		    });	
+	}
+	//metodo para listar las transacciones en base al typo de cuenta registrado y a un mes determinado
+    @GetMapping("/{typeAccount}/{month}")
+    public Flux<BankTransaction> getBankTransactionsByTypeAccountAndMonth
+    							(@PathVariable String typeAccount, @PathVariable String month) {
+        return bankTransactionService.getBankTransactionsByTypeAccountAndMonth(typeAccount, month);
+    }
 }
