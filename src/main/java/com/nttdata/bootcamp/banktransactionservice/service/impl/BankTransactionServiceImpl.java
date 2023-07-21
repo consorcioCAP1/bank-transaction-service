@@ -31,22 +31,9 @@ public class BankTransactionServiceImpl implements BankTransactionService{
 	public static final String ACCOUNT_TYPE_SAVING = "SAVING";
 	public static final String ACCOUNT_TYPE_CURRENT = "CURRENT";
 	public static final String ACCOUNT_TYPE_FIXED_TERM = "FIXED";
-	
-	@Value("${customer-bank-account.api.url}")
-    private String customerBankUrl;
-	
-	@Value("${customer-bank-account.url.getAccountBalance}")
-    private String customerBankUrlGetAccountBalance;
+	public static final int MAX_TRANSACTION = 20;
+	public static final Double TRANSACTION_FEE = 50.00;
 
-	@Value("${credit-account.api.url}")
-    private String creditServiceUrl;
-	
-	@Value("${credit-account.url.getAccountBalance}")
-    private String creditServiceUrlGetAccountBalance;
-
-	@Value("${create-credit-debts.api.url}")
-    private String createCreditDebtsApiUrl;
-	
 	@Autowired
 	ExternalApiService externalApiService;
 	
@@ -115,15 +102,35 @@ public class BankTransactionServiceImpl implements BankTransactionService{
 
 	private Mono<BankTransaction>processWithdrawal(CustomerBankAccountDto bankAccount,
 								BankTransactionDto transactionDto) {
-	    if (bankAccount.getAccountBalance() < transactionDto.getAmount()) {
-	        return Mono.error(new RuntimeException("Saldo en cuenta es insuficiente."));
-	    } else {
-	        Double newAmount = bankAccount.getAccountBalance() - transactionDto.getAmount();
-	        externalApiService.updateAccountBalance(transactionDto.getBankAccountNumber(), newAmount)
-	                .subscribe();
-	        BankTransaction bankTransaction = BankTransactionBuilder.buildTransaction(transactionDto);
-	        return repository.save(bankTransaction);
-	    }
+	    
+		
+		 // Realizar la transacción y obtener el conteo de transacciones
+	    return externalApiService.updateAccountBalance(transactionDto.getBankAccountNumber(),
+	            bankAccount.getAccountBalance() - transactionDto.getAmount())
+	            .then(repository
+	            	.findDepositsAndWithdrawalsByBankAccountNumber(transactionDto.getBankAccountNumber())
+                    .count()
+                    .flatMap(countBankAccount -> {
+                        Double newAmount;
+                        if (countBankAccount > MAX_TRANSACTION) {
+                        	//validar que saldo sea suficiente aplicando comision
+                            if (bankAccount.getAccountBalance() < (transactionDto.getAmount()+ TRANSACTION_FEE)) {
+                    			return Mono.error(new RuntimeException("Saldo en cuenta es insuficiente."));
+                    		}
+                        	newAmount = bankAccount.getAccountBalance() - countBankAccount - TRANSACTION_FEE;
+                        } else {
+                        	if (bankAccount.getAccountBalance() < transactionDto.getAmount()) {
+                    			return Mono.error(new RuntimeException("Saldo en cuenta es insuficiente."));
+                    	    
+                    		}
+                            newAmount = bankAccount.getAccountBalance();
+                        }
+                        externalApiService.updateAccountBalance(transactionDto.getBankAccountNumber(), newAmount)
+                                .subscribe();
+
+                        BankTransaction bankTransaction = BankTransactionBuilder.buildTransaction(transactionDto);
+                        return repository.save(bankTransaction);
+                    }));
 	}	
 
 	//metodo para realizar deposito en cuenta
