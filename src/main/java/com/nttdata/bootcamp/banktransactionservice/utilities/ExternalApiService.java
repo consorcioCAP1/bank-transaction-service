@@ -1,5 +1,6 @@
 package com.nttdata.bootcamp.banktransactionservice.utilities;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -11,14 +12,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nttdata.bootcamp.banktransactionservice.dto.BankTransactionDto;
 import com.nttdata.bootcamp.banktransactionservice.dto.CreditdebtDto;
 import com.nttdata.bootcamp.banktransactionservice.dto.CustomerBankAccountDto;
-
+import com.nttdata.bootcamp.banktransactionservice.service.impl.KakfaService;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
 public class ExternalApiService {
-   @Value("${customer-bank-account.api.url}")
+    @Value("${customer-bank-account.api.url}")
     private String customerBankUrl;
 
     @Value("${customer-bank-account.url.getAccountBalance}")
@@ -32,6 +33,9 @@ public class ExternalApiService {
 
 	@Value("${create-credit-debts.api.url}")
     private String createCreditDebtsApiUrl;
+	
+	@Autowired
+	KakfaService kafkaService;
 	
 	//metodo para obtener el saldo disponible de tarjetas credito
 	public Mono<Double> getCreditCardBalanceByAccountNumber(String accountNumber) {
@@ -90,6 +94,7 @@ public class ExternalApiService {
                 .flatMap(response -> {
                     if (response.getStatusCode() == HttpStatus.OK) {
 	                	log.info("se realizo la actualizacion del monto");
+	                	kafkaService.updateAccountBalanceWallet(bankAccountNumber, accountBalance);
                     	return Mono.empty(); // No se espera una respuesta específica
                     } else {
                         return Mono.error(new RuntimeException("Fallo actualizacion del Saldo del cliente."));
